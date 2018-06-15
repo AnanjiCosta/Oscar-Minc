@@ -40,7 +40,9 @@
 #oscar-main-form .acf-field input[type="email"],
 #oscar-main-form .acf-field input[type="url"],
 #oscar-main-form .acf-field textarea,
-#oscar-main-form .acf-field select {
+#oscar-main-form .acf-field select,
+#oscar-login-form input[type="text"],
+#oscar-login-form input[type="password"]{
     display: block;
     width: 100%;
     height: 34px;
@@ -66,7 +68,9 @@
 #oscar-main-form .acf-field input[type="email"]:focus,
 #oscar-main-form .acf-field input[type="url"]:focus,
 #oscar-main-form .acf-field textarea:focus,
-#oscar-main-form .acf-field select:focus {
+#oscar-main-form .acf-field select:focus,
+#oscar-login-form input[type="text"]:focus,
+#oscar-login-form input[type="password"]:focus{
     border-color: #66afe9;
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
@@ -81,7 +85,8 @@
     display: none;
 }
 
-#oscar-main-form .acf-form-submit .button{
+#oscar-main-form .acf-form-submit .button,
+#wp-submit{
     display: inline-block;
     padding: 6px 12px;
     margin-bottom: 0;
@@ -170,4 +175,8 @@
 
 #oscar-main-form .remaining-chars {
     float: right;
+}
+
+#oscar-video-form .progress {
+    margin-bottom: 15px;
 }

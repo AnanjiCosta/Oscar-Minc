@@ -219,7 +219,7 @@ class Oscar_Minc_Shortcodes
     public function oscar_minc_login_form()
     {
         echo '<div class="text-right">
-            <p>Ainda não possui cadastro? Faça o seu <b><a href="' . home_url('/registro') . '">aqui</a>.</b></p>
+            <p>Ainda não possui cadastro? Faça o seu <b><a href="' . home_url('/cadastro') . '">aqui</a>.</b></p>
         </div>';
 
         wp_login_form(
@@ -290,6 +290,11 @@ class Oscar_Minc_Shortcodes
         <?php }
     }
 
+	/**
+     * Upload movie form
+     *
+	 * @return string
+	 */
     public function oscar_minc_video_upload_form()
     {
 		$oscar_minc_options = get_option('oscar_minc_options');
@@ -301,10 +306,12 @@ class Oscar_Minc_Shortcodes
 
                 <p>Filme: <b><?php echo get_post_meta($_GET['inscricao'], 'titulo_do_filme', true)?></b>.</p>
 
-                <div class="alert alert-primary" role="alert">
+                <div id="info-alert" class="alert alert-primary" role="alert">
                     <p>Tamanho máximo para o arquivo de vídeo: <b><?php echo $oscar_minc_options['oscar_minc_movie_max_size']; ?>Gb</b>. Velocidade de conexão mínima sugerida: <b>10Mb</b>.</p>
                     <p>Resolução mínima <b>720p</b>. Formatos permitidos: <b><?php echo $oscar_minc_options['oscar_minc_movie_extensions'] ?></b>.</p>
                 </div>
+
+                <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
 
                 <form id="oscar-video-form" method="post" action="<?php echo get_the_permalink() ?>">
                     <div class="form-group text-center video-drag-area dropzone">
