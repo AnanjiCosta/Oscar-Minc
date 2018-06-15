@@ -1,0 +1,21 @@
+.column-movie,
+#oscar-video-post .inside{
+    position: relative;
+    overflow: hidden;
+}
+
+.oscar-thickbox-modal {
+    width: 600px;
+    height: 400px;
+    position: absolute;
+    top: 9999px;
+    left: 9999px;
+}
+
+.oscar-thickbox-modal-body h4{
+    margin-bottom: 0;
+}
+
+.oscar-thickbox-modal-body p{
+    margin: 0;
+}
