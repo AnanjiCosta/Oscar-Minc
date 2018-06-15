@@ -310,6 +310,12 @@ if (!class_exists('OscarMinC')) :
 
         }
 
+		/**
+         * Add bootstrap class to inputs in oscar main form
+         *
+		 * @param $field
+		 * @return mixed
+		 */
         public function main_form_bootstrap_utils( $field )
         {
 			$field['class'] = 'form-control';
@@ -396,6 +402,10 @@ if (!class_exists('OscarMinC')) :
             return $oscar_minc_options['oscar_minc_email_from_name'];
         }
 
+		/**
+		 * Handle the upload process for the movies
+         *
+		 */
         public function upload_oscar_video()
         {
             check_ajax_referer( 'oscar-video', 'nonce' );
@@ -414,7 +424,8 @@ if (!class_exists('OscarMinC')) :
 				$valid_formats =  $oscar_minc_options['oscar_minc_movie_extensions'] ? explode(', ', $oscar_minc_options['oscar_minc_movie_extensions']) : array('mp4');
 				$name = $_FILES['oscarVideo']['name']; // Get the name of the file
 				$size = $_FILES['oscarVideo']['size']; // Get the size of the file
-				list($txt, $ext) = explode(".", $name); // Extract the name and extension of the file
+				$ext  = explode('/', $_FILES['oscarVideo']['type'] )[1]; // Extract the extension of the file
+
 				if (in_array($ext, $valid_formats)) { // If the file is valid go on.
 					// Check if the file size is more than defined in options page
 					if ( $size < intval($oscar_minc_options['oscar_minc_movie_max_size']) * pow(1024,3) ) {
@@ -425,6 +436,7 @@ if (!class_exists('OscarMinC')) :
 						} else {
 							// The file was uploaded successfully!
 							update_post_meta($_POST['post_id'], 'movie_attachment_id', $attachment_id);
+							$this->movie_received_email($_POST['post_id']);
 							wp_send_json_success($oscar_minc_options['oscar_minc_movie_uploaded_message']);
 						}
 					} else {
@@ -435,88 +447,8 @@ if (!class_exists('OscarMinC')) :
 					wp_send_json_error( 'Formato de arquivo inválido.' );
                 }
 
-				/*
-				$attachment_id = media_handle_upload( 'oscarVideo', $_POST['post_id'] );
-				if ( is_wp_error( $attachment_id ) ) {
-					// There was an error uploading the image.
-					wp_send_json_error( $attachment_id->get_error_message() );
-				} else {
-					// The image was uploaded successfully!
-					wp_send_json_success();
-				}
-				*/
-
 				die;
-				if (strlen($name)) { // Check if the file is selected or cancelled after pressing the browse button.
-					list($txt, $ext) = explode(".", $name); // Extract the name and extension of the file
-					if (in_array($ext, $valid_formats)) { // If the file is valid go on.
-						if ($size < intval($oscar_minc_options['oscar_minc_movie_max_size'])*pow(1024,3) ) { //  Check if the file size is more than defined in options page
-							// Notice for admin
-							// admin_notice_on_upload_start( $_SESSION['logged_user_id'], $name );
-							$file_name = $_FILES['oscarVideo']['name'];
-							$tmp = $_FILES['oscarVideo']['tmp_name'];
-							// Check if path folder exists and has correct permissions
-							if (!is_writeable( $path )) {
-								printf('"%s" o diretório não possuir permissão de escrita.', $path);
-								error_log("Impossível criar arquivo no destino: " . $path, 0);
-							} else {
-								$unique_folder_based_on_cnpj = str_replace('.', '',  str_replace('-', '', str_replace('/', '', $_SESSION['logged_user_cnpj']) ) );
-								// Creates a unique folder to upload files (based on user CNPJ)
-								if (!file_exists( $path . '/' . $unique_folder_based_on_cnpj )) {
-									mkdir($path . '/' . $unique_folder_based_on_cnpj, 0777, true);
-								}
-								// Check if it the file move successfully.
-								if (move_uploaded_file($tmp, $path . '/' . $unique_folder_based_on_cnpj .'/'. $name)) {
-									// update_user_meta( $_SESSION['logged_user_id'], '_oscar_minc_movie_name', $name );
-									// update_user_meta( $_SESSION['logged_user_id'], '_oscar_minc_movie_path', $uploads['baseurl'] . '/oscar-videos/filmesoscar2018' . '/' . $unique_folder_based_on_cnpj .'/'. $name );
-									// update_user_meta( $_SESSION['logged_user_id'], '_oscar_minc_video_sent', true );
-									echo $oscar_minc_options['oscar_minc_movie_uploaded_message'];
-									// oscar_minc_video_sent_confirmation_email( $_SESSION['logged_user_id'] );
-								} else {
-									echo 'Falha ao mover arquivo para pasta destino';
-									error_log('Falha ao mover arquivo para pasta destino: ' . $path . '/' . $unique_folder_based_on_cnpj .'/'. $name, 0);
-								}
-							}
-						} else {
-							echo 'O tamanho do arquivo excede o limite de '. $oscar_minc_options['oscar_minc_movie_max_size'] .'Gb.';
-							error_log('O tamanho do arquivo excede o limite definido. User ID: ' . $_SESSION['logged_user_id'], 0);
-						}
-					} else {
-						echo 'Formato de arquivo inválido.';
-					}
-				} else {
-					echo 'Selecione um arquivo para realizar o upload';
-				}
-			}
-			die;
-
-            /*
-            $wp_upload_dir = wp_upload_dir();
-            $file_path     = trailingslashit( $wp_upload_dir['path'] ) . $_POST['file'];
-            $file_data     = $this->decode_chunk( $_POST['file_data'] );
-            if ( false === $file_data ) {
-                wp_send_json_error();
             }
-            // file_put_contents( $file_path, $file_data, FILE_APPEND );
-
-
-			require_once( ABSPATH . 'wp-admin/includes/image.php' );
-			require_once( ABSPATH . 'wp-admin/includes/file.php' );
-			require_once( ABSPATH . 'wp-admin/includes/media.php' );
-
-			// Let WordPress handle the upload.
-			// Remember, 'my_image_upload' is the name of our file input in our form above.
-			$attachment_id = media_handle_upload( $_POST['file'], $_POST['post_id'] );
-
-			if ( is_wp_error( $attachment_id ) ) {
-				// There was an error uploading the image.
-				wp_send_json_error( $attachment_id->get_error_message() );
-			} else {
-				// The image was uploaded successfully!
-				wp_send_json_success();
-			}
-
-            */
         }
 
         public function decode_chunk( $data ) {
@@ -606,6 +538,44 @@ if (!class_exists('OscarMinC')) :
 			}
 			return $maskared;
 		}
+
+		/**
+         * Send a notification to user when the movie has been received successfully
+         *
+		 * @param $post_id
+		 */
+		public function movie_received_email( $post_id )
+        {
+			$user = wp_get_current_user();
+			$oscar_minc_options = get_option('oscar_minc_options');
+			$to = $user->user_email;
+			$headers[] = 'From: ' . get_bloginfo('name') . ' <automatico@cultura.gov.br>';
+			$headers[] = 'Reply-To: ' . $oscar_minc_options['oscar_minc_email_from_name'] . ' <' . $oscar_minc_options['oscar_minc_email_from'] . '>';
+			$subject = 'Seu filme ' . get_post_meta($post_id, 'titulo_do_filme', true) . ', foi recebido com sucesso.';
+
+			$body = '<h1>Olá '. $user->display_name .',</h1>';
+			$body .= '<p>'. $oscar_minc_options['oscar_minc_movie_uploaded_message'] .'</p><br>';
+
+			if (!wp_mail($to, $subject, $body, $headers)) {
+				error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
+			}
+
+			$oscar_minc_options = get_option('oscar_minc_options');
+			$monitoring_emails = explode(',', $oscar_minc_options['oscar_minc_monitoring_emails']);
+			$to = array_map('trim', $monitoring_emails);
+			$headers[] = 'From: ' . get_bloginfo('name') . ' <automatico@cultura.gov.br>';
+			$headers[] = 'Reply-To: ' . $oscar_minc_options['oscar_minc_email_from_name'] . ' <' . $oscar_minc_options['oscar_minc_email_from'] . '>';
+			$subject = 'O filme ' . get_post_meta($post_id, 'titulo_do_filme', true) . ', foi enviado com sucesso.';
+
+			$body = '<h1>Olá,</h1>';
+			$body .= '<p>O proponente: <b>' . $user->display_name . '</b>, enviou o filme: <b>' . get_field('titulo_do_filme', $post_id) . '</b></p>';
+			$body .= '<p><br>Para visualiza-la, clique <a href="' . admin_url('post.php?post=' . $post_id . '&action=edit') . '">aqui</a>.<p>';
+			$body .= '<br><br><p><small>Você recebeu este email pois está cadastrado para monitorar as inscrições ao Oscar. Para deixar de monitorar, remova seu email das configurações, em: <a href="' . admin_url('edit.php?post_type=inscricao&page=inscricao-options-page') . '">Configurações Oscar</a></small><p>';
+
+			if (!wp_mail($to, $subject, $body, $headers)) {
+				error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
+			}
+        }
 
 
 	}

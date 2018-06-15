@@ -304,7 +304,7 @@ class Oscar_Minc_Shortcodes
 
             <?php if( !get_post_meta( $_GET['inscricao'], 'movie_attachment_id', true ) ): ?>
 
-                <p>Filme: <b><?php echo get_post_meta($_GET['inscricao'], 'titulo_do_filme', true)?></b>.</p>
+                <p>Filme: <b><?php echo get_post_meta($_GET['inscricao'], 'titulo_do_filme', true); ?></b>.</p>
 
                 <div id="info-alert" class="alert alert-primary" role="alert">
                     <p>Tamanho máximo para o arquivo de vídeo: <b><?php echo $oscar_minc_options['oscar_minc_movie_max_size']; ?>Gb</b>. Velocidade de conexão mínima sugerida: <b>10Mb</b>.</p>
