@@ -8,7 +8,8 @@
     var oscar = {
         init: function() {
             $(function () {
-                $('[data-toggle="tooltip"]').tooltip()
+                $('[data-toggle="tooltip"]').tooltip();
+                $('#reg-cnpj').mask('00.000.000/0000-00');
             })
         },
 

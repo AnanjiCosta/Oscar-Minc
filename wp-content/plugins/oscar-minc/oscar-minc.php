@@ -47,6 +47,7 @@ if (!class_exists('OscarMinC')) :
             add_action('edit_user_profile', array($this, 'oscar_user_cnpj_field'));
             add_action('personal_options_update', array($this, 'update_user_cnpj'));
             add_action('edit_user_profile_update', array($this, 'update_user_cnpj'));
+            add_action('template_redirect', array($this, 'redirect_to_auth'));
         }
 
         /**
@@ -577,6 +578,26 @@ if (!class_exists('OscarMinC')) :
 			}
         }
 
+		/**
+		 * Redirect users to auth page on specific pages
+         *
+		 */
+        public function redirect_to_auth()
+        {
+			if (
+				!is_user_logged_in() && is_page('minhas-inscricoes') ||
+				!is_user_logged_in() && is_page('enviar-video') ||
+				!is_user_logged_in() && is_page('inscricao')
+			) {
+				wp_redirect( home_url('/login') );
+				exit;
+			}
+
+			if (is_user_logged_in() && is_page('login')  ) {
+				wp_redirect( home_url('/cadastro') );
+				exit;
+			}
+        }
 
 	}
 
