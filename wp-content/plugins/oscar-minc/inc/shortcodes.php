@@ -172,9 +172,8 @@ class Oscar_Minc_Shortcodes
     {
         $username = $_POST['reg_name'];
         $email = $_POST['reg_email'];
-        $cnpj = $_POST['cnpj'];
+        $cnpj = str_replace('.', '', str_replace('-', '', str_replace('/', '', $_POST['cnpj'])));
         $password = $_POST['reg_password'];
-        $reg_password_repeat = $_POST['reg_password_repeat'];
 
         $userdata = array(
             'first_name' => esc_attr($username),
@@ -195,13 +194,19 @@ class Oscar_Minc_Shortcodes
             if (!is_wp_error($register_user)) {
                 add_user_meta($register_user, '_user_cnpj', esc_attr($cnpj), true);
                 echo '<div class="alert alert-success">';
-                echo 'Cadastro realizado com sucesso. Você será redirionado para a tela de login, caso isso não ocorra automaticamente, clique <strong><a href="' . home_url('/login') . '">aqui</a></strong>!';
+                echo 'Cadastro realizado com sucesso. Você será redirionado para a tela de login em <b class="time-before-redirect">5</b> segundos, caso isso não ocorra automaticamente, clique <strong><a href="' . home_url('/login') . '">aqui</a></strong>!';
                 echo '</div>';
                 $_POST = array(); ?>
                 <script type="text/javascript">
-                    window.setTimeout(function () {
-                        // window.location = '<?php echo home_url("/login"); ?>';
-                    }, 3000);
+                    var counter = 5;
+                    var interval = setInterval(function() {
+                        counter--;
+                        $('.time-before-redirect').text(counter);
+                        if (counter === 0) {
+                            clearInterval(interval);
+                            window.location = '<?php echo home_url("/login"); ?>';
+                        }
+                    }, 1000);
                 </script>
             <?php } else {
                 echo '<div class="alert alert-danger">';

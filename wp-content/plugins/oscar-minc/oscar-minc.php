@@ -48,6 +48,10 @@ if (!class_exists('OscarMinC')) :
             add_action('personal_options_update', array($this, 'update_user_cnpj'));
             add_action('edit_user_profile_update', array($this, 'update_user_cnpj'));
             add_action('template_redirect', array($this, 'redirect_to_auth'));
+            add_action('login_redirect', array($this, 'oscar_login_redirect'), 10, 3);
+            add_action('after_setup_theme', array($this, 'remove_admin_bar'));
+            add_action('wp_ajax_error_on_upload_oscar_video', array($this, 'error_on_upload_oscar_video'));
+            add_action('wp_ajax_nopriv_error_on_upload_oscar_video', array($this, 'error_on_upload_oscar_video'));
         }
 
         /**
@@ -224,7 +228,7 @@ if (!class_exists('OscarMinC')) :
                     <div id="oscar-movie-id-<?php echo $post_id; ?>" class="oscar-thickbox-modal">
                         <div class="oscar-thickbox-modal-body">
                             <?php echo do_shortcode('[video src="'. wp_get_attachment_url( $oscar_movie_id ) .'"]'); ?>
-                            <h4><b>Filme: </b><?php echo get_field('titulo_do_filme', $post_id); ?></h4>
+                            <h4><b>Filme: </b><?php echo get_field('titulo_do_filme', $post_id); ?> <a href="#"><small>(baixar filme)</small></a></h4>
                             <p><b>Proponente: <?php echo $post_author->display_name; ?></b></p>
                         </div>
                     </div>
@@ -233,6 +237,28 @@ if (!class_exists('OscarMinC')) :
                     echo $oscar_movie_id ? '<a href="#TB_inline?width=600&height=400&inlineId=oscar-movie-id-'. $post_id .'" class="thickbox oscar-thickbox-link">' . get_field('titulo_do_filme', $post_id) . '<br><small style="color: green;">Filme enviado</small></a>' : get_field('titulo_do_filme', $post_id) . '<br><small style="color: red;">Filme não enviado</small>';
                     break;
             }
+
+			if(isset($_REQUEST["file"])){
+                var_dump($_REQUEST);
+                die;
+				// Get parameters
+				$file = urldecode($_REQUEST["file"]); // Decode URL-encoded string
+				$filepath = "images/" . $file;
+
+				// Process download
+				if(file_exists($filepath)) {
+					header('Content-Description: File Transfer');
+					header('Content-Type: application/octet-stream');
+					header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+					header('Expires: 0');
+					header('Cache-Control: must-revalidate');
+					header('Pragma: public');
+					header('Content-Length: ' . filesize($filepath));
+					flush(); // Flush system output buffer
+					readfile($filepath);
+					exit;
+				}
+			}
         }
 
         /**
@@ -414,11 +440,12 @@ if (!class_exists('OscarMinC')) :
 			// error_reporting(0);
 			// @ini_set('display_errors',0);
 			if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
-				// if( get_user_meta( $_SESSION['logged_user_id'], '_oscar_video_sent', true ) ){
 				if( get_post_meta( $_POST['post_id'], 'movie_attachment_id', true ) ){
+					error_log('A inscrição : ' . $_POST['post_id'] . ' tentou reenviar o vídeo', 0);
 					wp_send_json_error( 'Seu vídeo já foi enviado.' );
-					exit;
+					die;
 				}
+
 				$oscar_minc_options = get_option('oscar_minc_options');
 				// Set the valid file extensions
 				// Example: array("jpg", "png", "gif", "bmp", "jpeg", "GIF", "JPG", "PNG", "doc", "txt", "docx", "pdf", "xls", "xlsx");
@@ -433,6 +460,7 @@ if (!class_exists('OscarMinC')) :
 						$attachment_id = media_handle_upload( 'oscarVideo', $_POST['post_id'] );
 						if ( is_wp_error( $attachment_id ) ) {
 							// There was an error uploading the image.
+							error_log('Houve um problema ao enviar o vídeo com inscrição: ' . $_POST['post_id'] . ', Erro: ' . $attachment_id->get_error_message(), 0);
 							wp_send_json_error( $attachment_id->get_error_message() );
 						} else {
 							// The file was uploaded successfully!
@@ -441,13 +469,17 @@ if (!class_exists('OscarMinC')) :
 							wp_send_json_success($oscar_minc_options['oscar_minc_movie_uploaded_message']);
 						}
 					} else {
+						error_log('O tamanho do arquivo excede o limite definido para a inscrição: ' . $_POST['post_id'], 0);
 						wp_send_json_error( 'O tamanho do arquivo excede o limite de '. $oscar_minc_options['oscar_movie_max_size'] .'Gb.' );
-						error_log('O tamanho do arquivo excede o limite definido. User ID: ' . $_SESSION['logged_user_id'], 0);
 					}
 				} else {
+					error_log('A inscrição : ' . $_POST['post_id'] . ' tentou enviar o vídeo com um formato inválido', 0);
 					wp_send_json_error( 'Formato de arquivo inválido.' );
                 }
 
+				die;
+            } else {
+				error_log('Houve um problema no servidor ao enviar o vídeo com inscrição: ' . $_POST['post_id'], 0);
 				die;
             }
         }
@@ -598,6 +630,124 @@ if (!class_exists('OscarMinC')) :
 				exit;
 			}
         }
+
+		/**
+		 * Redirect user after successful login.
+		 *
+		 */
+        public function oscar_login_redirect( $redirect_to, $request, $user )
+        {
+			if ( isset( $user->roles ) && is_array( $user->roles ) ) {
+				if ( in_array( array('administrator', 'editor'), $user->roles ) ) {
+					return $redirect_to;
+				} else {
+					return home_url('/minhas-inscricoes');
+				}
+			} else {
+				return $redirect_to;
+			}
+        }
+
+		/**
+		 * Disable Admin Bar for All Users Except for Administrators
+		 *
+		 */
+		public function remove_admin_bar()
+        {
+			if (!current_user_can('administrator') && !is_admin()) {
+				show_admin_bar(false);
+			}
+        }
+
+		/**
+		 * Send an email for monitors, with detailed error data on submitting video
+         *
+		 */
+        public function error_on_upload_oscar_video ()
+        {
+			if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
+
+				$user = wp_get_current_user();
+				$user_cnpj = get_user_meta( $user->ID, '_user_cnpj', true );
+				$user_cnpj = $this->mask($user_cnpj, '##.###.###/####-##');
+
+				$oscar_minc_options = get_option('oscar_minc_options');
+				$monitoring_emails = explode(',', $oscar_minc_options['oscar_minc_monitoring_emails']);
+				$to = array_map('trim', $monitoring_emails);
+				$headers[] = 'From: ' . get_bloginfo('name') . ' <automatico@cultura.gov.br>';
+				$headers[] = 'Reply-To: ' . $oscar_minc_options['oscar_minc_email_from_name'] . ' <' . $oscar_minc_options['oscar_minc_email_from'] . '>';
+				$subject = 'Erro ao enviar um filme';
+
+				$body = '<h1>Olá,</h1>';
+				$body .= '<p>O proponente: <b>' . $user->display_name . '</b> (CNPJ: <b>' . $user_cnpj . '</b>), não conseguiu enviar o filme devido à um erro interno às '. date('d/m/Y - H:i:s') .'</p>';
+				$body .= '<p>Dados sobre o arquivo:</p>';
+				$body .= '<ul>';
+				$body .= '<li>Nome: <b>'. $_POST['movie_name'] .'</b></li>';
+				$body .= '<li>Tamanho: <b>'. $this->format_bytes( $_POST['movie_size'] ) .'</b></li>';
+				$body .= '<li>Tipo: <b>'. $_POST['movie_type'] .'</b></li>';
+				$body .= '</ul>';
+				$body .= '<p>Informações sobre o navegador utilizado (Sistema operacional: '. $_POST['so'] .'):</p>';
+				$body .= '<ul>';
+				$body .= '<li>Código: <b>'. $_POST['browser_codename'] .'</b></li>';
+				$body .= '<li>Nome: <b>'. $_POST['browser_name'] .'</b></li>';
+				$body .= '<li>Versão: <b>'. $_POST['browser_version'] .'</b></li>';
+				$body .= '</ul>';
+				$body .= '<br><br><p><small>Você recebeu este email pois está cadastrado para monitorar as inscrições ao Oscar. Para deixar de monitorar, remova seu email das configurações, em: <a href="' . admin_url('edit.php?post_type=inscricao&page=inscricao-options-page') . '">Configurações Oscar</a></small><p>';
+
+				if (!wp_mail($to, $subject, $body, $headers)) {
+					error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
+				}
+
+				wp_send_json_success();
+				exit;
+            }
+        }
+
+
+		/**
+         * Converts bytes into human readable file size.
+		 *
+         * @author Mogilev Arseny
+         * @link http://php.net/manual/de/function.filesize.php
+		 * @param $bytes
+		 * @return float|int|string
+		 */
+        public function format_bytes($bytes) {
+			$bytes = floatval($bytes);
+			$arBytes = array(
+				0 => array(
+					"UNIT" => "TB",
+					"VALUE" => pow(1024, 4)
+				),
+				1 => array(
+					"UNIT" => "GB",
+					"VALUE" => pow(1024, 3)
+				),
+				2 => array(
+					"UNIT" => "MB",
+					"VALUE" => pow(1024, 2)
+				),
+				3 => array(
+					"UNIT" => "KB",
+					"VALUE" => 1024
+				),
+				4 => array(
+					"UNIT" => "B",
+					"VALUE" => 1
+				),
+			);
+
+			foreach($arBytes as $arItem)
+			{
+				if($bytes >= $arItem["VALUE"])
+				{
+					$result = $bytes / $arItem["VALUE"];
+					$result = str_replace(".", "," , strval(round($result, 2)))." ".$arItem["UNIT"];
+					break;
+				}
+			}
+			return $result;
+		}
 
 	}
 

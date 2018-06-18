@@ -74,7 +74,7 @@
                             $('#error-alert').removeClass('d-none').append('<p><b>Erro: </b>' + error + '</p>');
                         });
                     } else {
-                        $('#error-alert').addClass('d-none')
+                        $('#error-alert').addClass('d-none');
                         $('#oscar-video-name').text($(this)[0].files[0].name);
                         $('#oscar-video-upload-btn').removeAttr('disabled');
                         $('#oscar-video-form .video-drag-area').addClass('ready-to-upload');
@@ -128,6 +128,7 @@
                     type: 'POST',
                     beforeSend: function () {
                         $('#upload-status').removeClass('hidden');
+                        $('#oscar-video-upload-btn').text('Enviando vídeo').attr('disabled', 'disabled').hide();
                     },
                     // this part is progress bar
                     xhr: function () {
@@ -159,10 +160,39 @@
                         }
                     },
                     error: function( jqXHR, textStatus, errorThrown ) {
+                        notifyErrorOnUplod( $('#oscar-video')[0].files[0] );
                         console.error( jqXHR, textStatus, errorThrown );
+                        $('#error-alert').removeClass('d-none').html('<p>Ocorreu um <b>erro</b> em nosso sistema ao enviar seu filme. Nossa equipe técnica foi avisada e entrará em contato após a resolução do problema.</p>');
                     }
                 });
             });
+
+            function notifyErrorOnUplod( movieData ) {
+                console.log( movieData, jQuery.browser );
+                var movieName = movieData.name,
+                    movieSize = movieData.size,
+                    movieType = movieData.type;
+                $.ajax({
+                    url: oscar_minc_vars.ajaxurl,
+                    data: {
+                        action: 'error_on_upload_oscar_video',
+                        movie_name: movieName,
+                        movie_size: movieSize,
+                        movie_type: movieType,
+                        browser_codename: navigator.appCodeName,
+                        browser_name: navigator.appName,
+                        browser_version: navigator.appVersion,
+                        so: navigator.platform
+                    },
+                    type: 'POST',
+                    success: function (res) {
+                        console.log(res);
+                    },
+                    error: function( jqXHR, textStatus, errorThrown ) {
+                        console.error( jqXHR, textStatus, errorThrown );
+                    }
+                });
+            }
         },
     };
 })(jQuery);
