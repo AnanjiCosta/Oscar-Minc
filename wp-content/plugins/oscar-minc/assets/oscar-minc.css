@@ -180,3 +180,8 @@
 #oscar-video-form .progress {
     margin-bottom: 15px;
 }
+
+#info-alert p,
+#error-alert p {
+    margin: 0;
+}

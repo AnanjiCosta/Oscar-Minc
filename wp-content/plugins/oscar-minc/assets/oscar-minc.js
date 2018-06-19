@@ -140,19 +140,21 @@
                                 $('#oscar-video-form .myprogress').text(percentComplete + '%');
                                 $('#oscar-video-form .myprogress').css('width', percentComplete + '%');
                                 if( percentComplete === 100 ){
-                                    $('#oscar-video-form .msg').html('Finalizando o processo de envio do filme.');
-                                    $('#oscar-video-form .myprogress').removeClass('progress-bar-animated');
+                                    $('#oscar-video-form .msg').html('Finalizando o processo de envio do filme. Por favor, aguarde mais um pouco.');
+                                    $('#upload-status .progress .progress-bar').text('Processando');
                                 }
                             }
                         }, false);
                         return xhr;
                     },
                     success: function (res) {
-                        console.log(res);
+                        // console.log(res);
                         if( res.success ){
                             $('#oscar-video-form .msg').addClass('success');
                             $('#oscar-video-form .msg').html(res.data);
                             $('#oscar-video-upload-btn').hide();
+                            $('#oscar-video-form .myprogress').removeClass('progress-bar-animated');
+                            $('#upload-status .progress .progress-bar').addClass('bg-success').text('Sucesso');
                         } else {
                             $('#oscar-video-form .myprogress').text('0%');
                             $('#oscar-video-form .myprogress').css('width', '0%');
@@ -160,9 +162,12 @@
                         }
                     },
                     error: function( jqXHR, textStatus, errorThrown ) {
+                        // console.error( jqXHR, textStatus, errorThrown );
                         notifyErrorOnUplod( $('#oscar-video')[0].files[0] );
-                        console.error( jqXHR, textStatus, errorThrown );
                         $('#error-alert').removeClass('d-none').html('<p>Ocorreu um <b>erro</b> em nosso sistema ao enviar seu filme. Nossa equipe técnica foi avisada e entrará em contato após a resolução do problema.</p>');
+                        $('#oscar-video-form .myprogress').removeClass('progress-bar-animated');
+                        $('#upload-status .progress .progress-bar').addClass('bg-danger').text('Erro');
+                        $('#upload-status .panel').hide();
                     }
                 });
             });

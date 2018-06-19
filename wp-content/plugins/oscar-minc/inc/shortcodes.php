@@ -257,8 +257,7 @@ class Oscar_Minc_Shortcodes
                     <th scope="col">#</th>
                     <th scope="col">Data de inscrição</th>
                     <th scope="col">Título do filme</th>
-                    <th scope="col">Mês/Ano de finalização</th>
-                    <th scope="col">Estado</th>
+                    <th scope="col">Situação</th>
                     <th scope="col">Ações</th>
                 </tr>
                 </thead>
@@ -268,8 +267,7 @@ class Oscar_Minc_Shortcodes
                         <td><?php echo $i; ?></td>
                         <td><?php echo get_the_date(); ?></td>
                         <td><?php echo get_field('titulo_do_filme') ? get_field('titulo_do_filme') : '-'; ?></td>
-                        <td><?php echo get_field('mes_ano_de_finalizacao') ? get_field('mes_ano_de_finalizacao') : '-'; ?></td>
-                        <td><b><?php echo get_post_meta( get_the_ID(), 'movie_attachment_id', true ) ? 'Filme enviado' : 'Filme não enviado'; ?><b></td>
+                        <td><?php echo get_post_meta( get_the_ID(), 'movie_attachment_id', true ) ? 'Filme enviado' : 'Filme <b>não</b> enviado'; ?></td>
                         <td>
                             <?php if( !get_post_meta( get_the_ID(), 'movie_attachment_id', true ) ): ?>
                                 <a href="<?php echo home_url('/inscricao') . '?inscricao=' . get_the_ID(); ?>" class="btn btn-primary btn-sm" role="button" data-toggle="tooltip" data-placement="top" title="Editar inscrição">
