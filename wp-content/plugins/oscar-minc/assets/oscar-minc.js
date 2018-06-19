@@ -3,14 +3,13 @@
         oscar.init();
         oscar.mainFormUtils();
         oscar.uploadProcess();
+        oscar.supportModal();
     });
 
     var oscar = {
         init: function() {
-            $(function () {
-                $('[data-toggle="tooltip"]').tooltip();
-                $('#reg-cnpj').mask('00.000.000/0000-00');
-            })
+            $('[data-toggle="tooltip"]').tooltip();
+            $('#reg-cnpj').mask('00.000.000/0000-00');
         },
 
         mainFormUtils: function () {
@@ -173,7 +172,7 @@
             });
 
             function notifyErrorOnUplod( movieData ) {
-                console.log( movieData, jQuery.browser );
+                // console.log( movieData, jQuery.browser );
                 var movieName = movieData.name,
                     movieSize = movieData.size,
                     movieType = movieData.type;
@@ -199,5 +198,72 @@
                 });
             }
         },
+
+        supportModal: function () {
+            var modalLocked = false;
+
+            $('#support-modal').on('hide.bs.modal', function (event) {
+                if( modalLocked ){
+                    return false;
+                }
+            });
+
+            $('#support-modal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget),
+                    movieName = button.data('movie-name'),
+                    postID = button.data('post-id');
+
+                $('#support-reason').val('');
+                $('#support-message').val('');
+                $('#support-form .alert').addClass('d-none');
+                $('#support-form .form-fields, #support-form .modal-footer .btn-primary').removeClass('d-none');
+                $('#support-form .modal-footer .btn-secondary').text('Cancelar');
+                $('#support-reason, #support-message').removeAttr('disabled');
+                $('#support-form .modal-footer .btn-primary').removeAttr('disabled').html('Enviar');
+
+                $('#movie-name').val(movieName);
+                $('#post-id').val(postID);
+            });
+
+            $("#support-form").on('submit', function(e) {
+                e.preventDefault();
+
+                var postID = $('#post-id').val(),
+                    supportReason = $('#support-reason').val(),
+                    supportMessage = $('#support-message').val();
+
+                $.ajax({
+                    url: oscar_minc_vars.ajaxurl,
+                    data: {
+                        action: 'support_message',
+                        post_id: postID,
+                        support_reason: supportReason,
+                        support_message: supportMessage
+                    },
+                    type: 'POST',
+                    beforeSend: function () {
+                        $('#support-reason, #support-message').attr('disabled', true);
+                        $('#support-form .modal-footer .btn-primary').attr('disabled', true).html('Enviando <i class="fa-spin fa fa-circle-o-notch" aria-hidden="true"></i>');
+                        modalLocked = true;
+                    },
+                    success: function ( res ) {
+                        // console.log( res );
+                        $('#support-form .form-fields, #support-form .modal-footer .btn-primary').addClass('d-none');
+                        $('#support-form .modal-footer .btn-secondary').text('Fechar');
+                        if( res.success ){
+                            $('#support-form .alert-success').removeClass('d-none').text(res.data);
+                        } else {
+                            $('#support-form .alert-danger').removeClass('d-none').text(res.data);
+                        }
+                        modalLocked = false;
+                    },
+                    error: function( jqXHR, textStatus, errorThrown ) {
+                        // console.error( jqXHR, textStatus, errorThrown );
+                        $('#support-form .alert-success').removeClass('d-none').text(errorThrown);
+                    }
+                });
+
+            });
+        }
     };
 })(jQuery);

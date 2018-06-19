@@ -52,6 +52,8 @@ if (!class_exists('OscarMinC')) :
             add_action('after_setup_theme', array($this, 'remove_admin_bar'));
             add_action('wp_ajax_error_on_upload_oscar_video', array($this, 'error_on_upload_oscar_video'));
             add_action('wp_ajax_nopriv_error_on_upload_oscar_video', array($this, 'error_on_upload_oscar_video'));
+            add_action('wp_ajax_support_message', array($this, 'support_message'));
+            add_action('wp_ajax_nopriv_support_message', array($this, 'support_message'));
         }
 
         /**
@@ -756,6 +758,40 @@ if (!class_exists('OscarMinC')) :
 				}
 			}
 			return $result;
+		}
+
+		public function support_message ()
+		{
+			if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
+				$user = wp_get_current_user();
+				$user_cnpj = get_user_meta( $user->ID, '_user_cnpj', true );
+				$user_cnpj = $this->mask($user_cnpj, '##.###.###/####-##');
+
+				$oscar_minc_options = get_option('oscar_minc_options');
+				$monitoring_emails = explode(',', $oscar_minc_options['oscar_minc_monitoring_emails']);
+				$to = array_map('trim', $monitoring_emails);
+				$headers[] = 'From: ' . get_bloginfo('name') . ' <automatico@cultura.gov.br>';
+				$headers[] = 'Reply-To: ' . $oscar_minc_options['oscar_minc_email_from_name'] . ' <' . $oscar_minc_options['oscar_minc_email_from'] . '>';
+				$subject = 'Solicitação de suporte para a inscrição';
+
+				$body = '<h1>Olá,</h1>';
+				$body .= '<p>O proponente: <b>' . $user->display_name . '</b> (CNPJ: <b>' . $user_cnpj . '</b>), solicitou suporte para: <b>'. get_the_title($_POST['post_id']) .'</b>.</p>';
+				$body .= '<p>Mensagem recebida:</p>';
+				$body .= '<ul>';
+				$body .= '<li>Motivo do suporte: <b>'. $_POST['support_reason'] .'</b></li>';
+				$body .= '<li>Mensagem: <b>'. $_POST['support_message'] .'</b></li>';
+				$body .= '</ul>';
+				$body .= '<p>O email do proponente para resposta é: <b>' . $user->user_email . '</b>, acesse os dados de sua inscrição <a href="' . admin_url('post.php?post='. $_POST['post_id'] .'&action=edit') . '">aqui</a>.</p>';
+				$body .= '<br><br><p><small>Você recebeu este email pois está cadastrado para monitorar as inscrições ao Oscar. Para deixar de monitorar, remova seu email das configurações, em: <a href="' . admin_url('edit.php?post_type=inscricao&page=inscricao-options-page') . '">Configurações Oscar</a></small><p>';
+
+				if (!wp_mail($to, $subject, $body, $headers)) {
+					error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
+					wp_send_json_error('Ocorreu um erro ao tentar enviar sua mensagem, por favor tente novamente mais tarde.');
+				}
+
+				wp_send_json_success('Sua mensagem foi enviada com sucesso e será analisada por nossa equipe.');
+				exit;
+			}
 		}
 
 	}

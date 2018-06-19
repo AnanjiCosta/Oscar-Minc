@@ -246,6 +246,7 @@ class Oscar_Minc_Shortcodes
         $args = array(
             'posts_per_page' => -1,
             'post_type' => 'inscricao',
+            'order' => 'ASC',
             'author' => $current_user->ID
         );
         $the_query = new WP_Query( $args );
@@ -277,9 +278,17 @@ class Oscar_Minc_Shortcodes
                                     <i class="fa fa-paper-plane"></i>
                                 </a>
                             <?php else: ?>
-                                <a href="#" class="btn btn-primary btn-sm" role="button" data-toggle="tooltip" data-placement="top" title="Solicitar suporte">
-                                    <i class="fa fa-question-circle"></i>
-                                </a>
+                                <span data-toggle="tooltip" data-placement="top" title="Solicitar suporte">
+                                    <a href="#"
+                                       class="ask-for-support-link btn btn-primary btn-sm"
+                                       role="button"
+                                       data-toggle="modal"
+                                       data-target="#support-modal"
+                                       data-movie-name="<?php the_field('titulo_do_filme'); ?>"
+                                       data-post-id="<?php the_ID(); ?>">
+                                        <i class="fa fa-question-circle"></i>
+                                    </a>
+                                </span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -287,6 +296,51 @@ class Oscar_Minc_Shortcodes
                 </tbody>
             </table>
             <a href="<?php echo home_url('/inscricao'); ?>" class="btn btn-primary ">Realizar nova inscrição</a>
+
+            <div class="modal fade" id="support-modal" tabindex="-1" role="dialog" aria-labelledby="support-modal-title" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="support-modal-title">Solicitar suporte</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form id="support-form">
+                            <div class="modal-body">
+                                <div class="alert alert-success d-none" role="alert"></div>
+                                <div class="alert alert-danger d-none" role="alert"></div>
+                                <div class="form-fields">
+                                    <div class="form-group row">
+                                        <label for="movie-name" class="col-sm-2 col-form-label">Filme</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext" id="movie-name" value="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="support-reason" class="col-sm-2 col-form-label">Motivo</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="support-reason" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="support-message" class="col-sm-2 col-form-label">Mensagem</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" id="support-message" rows="3" required></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Enviar</button>
+                            </div>
+                            <input type="hidden" id="post-id" name="post-id" value="">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <?php wp_reset_postdata();
         } else { ?>
             <a href="<?php echo home_url('/inscricao'); ?>" class="btn btn-primary ">Realizar inscrição</a>
