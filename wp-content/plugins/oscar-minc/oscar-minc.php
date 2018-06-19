@@ -26,8 +26,8 @@ if (!class_exists('OscarMinC')) :
             register_activation_hook(__FILE__, array($this, 'activate_oscar_minc'));
             add_action('init', array($this, 'inscricao_cpt'));
             add_filter('manage_inscricao_posts_columns', array($this, 'add_inscricao_columns'));
-			add_action( 'add_meta_boxes_inscricao', array($this, 'oscar_minc_meta_boxes') );
-			add_action( 'save_post_inscricao', array($this, 'oscar_video_save_post_meta_box') );
+			add_action('add_meta_boxes_inscricao', array($this, 'oscar_minc_meta_boxes') );
+			add_action('save_post_inscricao', array($this, 'oscar_video_save_post_meta_box') );
             add_action('manage_posts_custom_column', array($this, 'inscricao_custom_columns'), 10, 2);
             add_action('init', array($this, 'oscar_shortcodes'));
             add_action('acf/pre_save_post', array($this, 'preprocess_main_form'));
@@ -459,23 +459,17 @@ if (!class_exists('OscarMinC')) :
 				}
 
 				$oscar_minc_options = get_option('oscar_minc_options');
-				// Set the valid file extensions
-				// Example: array("jpg", "png", "gif", "bmp", "jpeg", "GIF", "JPG", "PNG", "doc", "txt", "docx", "pdf", "xls", "xlsx");
 				$valid_formats =  $oscar_minc_options['oscar_minc_movie_extensions'] ? explode(', ', $oscar_minc_options['oscar_minc_movie_extensions']) : array('mp4');
-				$name = $_FILES['oscarVideo']['name']; // Get the name of the file
 				$size = $_FILES['oscarVideo']['size']; // Get the size of the file
 				$ext  = explode('/', $_FILES['oscarVideo']['type'] )[1]; // Extract the extension of the file
 
-                // var_dump($_FILES['oscarVideo']['type']);
                 // Check for mov extension file type
                 if( array_search('mov', $valid_formats) ){
 					$ext_mov = array_search('mov', $valid_formats);
 					$valid_formats[$ext_mov] = 'quicktime';
                 }
-				// var_dump($valid_formats);
 
-				if (in_array($ext, $valid_formats)) { // If the file is valid go on.
-					// Check if the file size is more than defined in options page
+				if (in_array($ext, $valid_formats)) {
 					if ( $size < intval($oscar_minc_options['oscar_minc_movie_max_size']) * pow(1024,3) ) {
 						$attachment_id = media_handle_upload( 'oscarVideo', $_POST['post_id'] );
 						if ( is_wp_error( $attachment_id ) ) {
@@ -672,7 +666,11 @@ if (!class_exists('OscarMinC')) :
 		 */
 		public function remove_admin_bar()
         {
-			if (!current_user_can('administrator') && !is_admin()) {
+			if (
+			        !current_user_can('administrator') &&
+					!current_user_can('editor') &&
+                    !is_admin()
+            ) {
 				show_admin_bar(false);
 			}
         }
