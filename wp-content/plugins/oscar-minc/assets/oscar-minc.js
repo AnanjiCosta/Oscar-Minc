@@ -90,7 +90,7 @@
                         errors.push('O tamanho do arquivo excede o limite permitido.');
                     }
 
-                    if( movieObj.type !== 'video/mp4' && movieObj.type !== 'video/avi' ){
+                    if( movieObj.type !== 'video/mp4' && movieObj.type !== 'video/avi' && movieObj.type !== 'video/quicktime' ){
                         errors.push('O formato do arquivo não é permitido.');
                     }
 
