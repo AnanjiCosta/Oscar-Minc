@@ -7,13 +7,14 @@ function oscar_minc_options_page() {
     // add top level menu page
     add_submenu_page(
         'edit.php?post_type=inscricao',
-        'Configurações',
+        'Configurações Oscar',
         'Configurações',
         'manage_options',
         'inscricao-options-page',
         'oscar_minc_options_page_html'
     );
 }
+
 /**
  * top level menu:
  * callback functions
@@ -49,36 +50,35 @@ function oscar_minc_options_page_html() {
     </div>
     <?php
 }
+
 /**
  * register our wporg_settings_init to the admin_init action hook
  */
 add_action( 'admin_init', 'oscar_minc_settings_init' );
 function oscar_minc_settings_init() {
     register_setting( 'oscar', 'oscar_minc_options' );
+
     add_settings_section(
         'oscar_minc_video_upload_section',
         'Formulário de envio de vídeo',
         '',
         'oscar'
     );
+
     add_settings_section(
         'oscar_minc_mail_confirmation_section',
         'Email de confirmação',
         '',
         'oscar'
     );
+
     add_settings_section(
         'oscar_minc_deadline_section',
         'Prazo para inscrições',
         '',
         'oscar'
     );
-    add_settings_section(
-        'oscar_minc_debug_section',
-        'Para o desenvolvedor',
-        '',
-        'oscar'
-    );
+
     add_settings_field(
         'oscar_minc_movie_extensions',
         'Extensões permitidas',
@@ -90,6 +90,7 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
+
     add_settings_field(
         'oscar_minc_movie_max_size',
         'Tamanho máximo para o vídeo',
@@ -100,6 +101,7 @@ function oscar_minc_settings_init() {
             'label_for' => 'oscar_minc_movie_max_size',
         ]
     );
+
     add_settings_field(
         'oscar_minc_movie_uploaded_message',
         'Mensagem de sucesso ao enviar o vídeo',
@@ -111,6 +113,7 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
+
     add_settings_field(
         'oscar_minc_email_from',
         'Email para o remetente',
@@ -122,9 +125,10 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
+
     add_settings_field(
         'oscar_minc_email_body',
-        'Texto para o email de envio do formulário',
+        'Texto para o email de envio de inscrição',
         'oscar_minc_email_body',
         'oscar',
         'oscar_minc_mail_confirmation_section',
@@ -144,17 +148,7 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
-    add_settings_field(
-        'oscar_minc_videos_folder',
-        'Diretório de upload',
-        'oscar_minc_videos_folder',
-        'oscar',
-        'oscar_minc_mail_confirmation_section',
-        [
-            'label_for' => 'oscar_minc_videos_folder',
-            'class' => 'form-field',
-        ]
-    );
+
     add_settings_field(
         'oscar_minc_monitoring_emails',
         'Emails para monitoramento',
@@ -166,6 +160,7 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
+
     add_settings_field(
         'oscar_minc_deadline_time',
         'Data para encerramento das inscrições',
@@ -177,6 +172,7 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
+
     add_settings_field(
         'oscar_minc_deadline_text',
         'Mensagem para o usuário',
@@ -188,157 +184,72 @@ function oscar_minc_settings_init() {
             'class' => 'form-field',
         ]
     );
-    if( !empty($_GET['debug']) ){
-        add_settings_field(
-            'oscar_minc_debug_view',
-            'Debug',
-            'oscar_minc_debug_view',
-            'oscar',
-            'oscar_minc_debug_section',
-            [
-                'label_for' => 'oscar_minc_debug_view',
-                'class' => 'form-field',
-            ]
-        );
-        add_settings_field(
-            'oscar_minc_delete_user_video_sent_meta',
-            'Deletar envio de vídeo de usuário',
-            'oscar_minc_delete_user_video_sent_meta',
-            'oscar',
-            'oscar_minc_debug_section',
-            [
-                'label_for' => 'oscar_minc_delete_user_video_sent_meta',
-                'class' => 'form-field',
-            ]
-        );
-        add_settings_field(
-            'oscar_minc_users_that_can_surpass_deadline',
-            'Usuários além do prazo',
-            'oscar_minc_users_that_can_surpass_deadline',
-            'oscar',
-            'oscar_minc_debug_section',
-            [
-                'label_for' => 'oscar_minc_users_that_can_surpass_deadline',
-                'class' => 'form-field',
-            ]
-        );
-    }
 }
+
 function oscar_minc_movie_extensions( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
 
     <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="text" value="<?php echo $options['oscar_minc_movie_extensions']; ?>">
-    <p class="description">
-        Defina as extensões permitidas para os vídeos, separando as com vírgulas. Exemplo: mp4, avi, mkv, wmv.
-    </p>
+    <p class="description">Defina as extensões permitidas para os vídeos, separando as com vírgulas. Exemplo: mp4, avi, mkv, wmv.</p>
     <?php
 }
+
 function oscar_minc_movie_max_size( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
 
     <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="number" value="<?php echo $options['oscar_minc_movie_max_size']; ?>">
-    <p class="description">
-        Tamanho em Gigabytes
-    </p>
+    <p class="description">Tamanho em Gigabytes</p>
     <?php
 }
+
 function oscar_minc_movie_uploaded_message( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="5"><?php echo $options['oscar_minc_movie_uploaded_message']; ?></textarea>
-    <p class="description">
-        Essa é a mensagem que o usuário verá ao enviar um vídeo com sucesso. Além disso, um email de confirmação será enviado para o mesmo.
-    </p>
+    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="3"><?php echo $options['oscar_minc_movie_uploaded_message']; ?></textarea>
+    <p class="description">Essa é a mensagem que o usuário verá ao enviar um vídeo com sucesso, além disso, um email de confirmação com esta mensagem será enviado para o mesmo.</p>
     <?php
 }
+
 function oscar_minc_email_from( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
 
     <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="text" value="<?php echo $options['oscar_minc_email_from']; ?>">
+    <p class="description">Remetente para todos os emails enviados.</p>
     <?php
 }
+
 function oscar_minc_email_body( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="10"><?php echo $options['oscar_minc_email_body']; ?></textarea>
-    <p class="description">
-        Mensagem recebida pelo usuário ao realizar o cadastro do formulário.
-    </p>
+    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="3"><?php echo $options['oscar_minc_email_body']; ?></textarea>
+    <p class="description">Mensagem recebida pelo usuário ao realizar uma inscrição.</p>
     <?php
 }
+
 function oscar_minc_email_body_video_received( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="10"><?php echo $options['oscar_minc_email_body_video_received']; ?></textarea>
-    <p class="description">
-        Mensagem recebida pelo usuário após o correto envio do vídeo.
-    </p>
+    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="3"><?php echo $options['oscar_minc_email_body_video_received']; ?></textarea>
+    <p class="description">Mensagem recebida pelo usuário após o correto envio do filme.</p>
  <?php
 }
-function oscar_minc_videos_folder( $args ) {
-    $uploads = wp_upload_dir();
-    $path = $uploads['basedir'] . '/oscar-videos'; ?>
 
-    <input id="<?php echo esc_attr( $args['label_for'] ); ?>" type="text" value="<?php echo $path; ?>" disabled="true">
-    <p class="description">
-        Diretório para onde os vídeos são enviados. Campo apenas para visualização!
-    </p>
-    <?php
-}
-function oscar_minc_debug_view( $args ) {
-    $options = get_option( 'oscar_minc_options' );
-    echo '<h3>Opções salvas</h3>';
-    echo '<pre>';
-    var_dump($options);
-    echo '</pre>';
-    echo '<h3>Sessões salvas</h3>';
-    if( session_start() ){
-        echo '<pre>';
-        var_dump($_SESSION);
-        echo '</pre>';
-    }else {
-        echo 'Não foi possível iniciar a sessão!';
-    }
-}
-function oscar_minc_delete_user_video_sent_meta( $args ) { ?>
-    <input id="delete_user_video_sent_meta" name="delete_user_video_sent_meta" type="number" value="">
-    <p class="description">
-        Insira o ID do usuário para deletar sua limitação ao enviar vídeos.
-    </p>
-    <?php
-}
 function oscar_minc_monitoring_emails( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-
     <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="text" value="<?php echo $options['oscar_minc_monitoring_emails']; ?>">
     <p class="description">
         Estes emails receberão uma notificação sempre que for realizado uma inscrição ou edição do formulário de inscrição ao Oscar 2018. Separe múltiplos emails com vírgulas.
     </p>
     <?php
 }
+
 function oscar_minc_deadline_time( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-
     <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="text" value="<?php echo $options['oscar_minc_deadline_time']; ?>">
-    <p class="description">
-        Seguindo o seguinte padrão: <b>AAAA-MM-DD 24:59:59</b>
-    </p>
+    <p class="description">Seguindo o seguinte padrão: <b>AAAA-MM-DD 24:59:59</b></p>
     <?php
 }
+
 function oscar_minc_deadline_text( $args ) {
     $options = get_option( 'oscar_minc_options' ); ?>
-
-    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="5"><?php echo $options['oscar_minc_deadline_text']; ?></textarea>
-    <?php
-}
-if( !empty( $_POST['delete_user_video_sent_meta'] ) ){
-    if( !delete_user_meta($_POST['delete_user_video_sent_meta'], '_oscar_minc_video_sent') ){
-        error_log("Não foi possível remover a limitação para envio de usuários do ID " . $_POST['delete_user_video_sent_meta']);
-    }
-}
-function oscar_minc_users_that_can_surpass_deadline( $args ) {
-    $options = get_option( 'oscar_minc_options' ); ?>
-
-    <input id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" type="text" value="<?php echo $options['oscar_minc_users_that_can_surpass_deadline']; ?>">
-    <p class="description">
-        ID dos usuários que poderão fazer login (em páginas alternativas, não com slug <b>login</b>) e enviar vídeos normalmente. Separe os usuários por vírgula.
-    </p>
+    <textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="oscar_minc_options[<?php echo esc_attr( $args['label_for'] ); ?>]" rows="3"><?php echo $options['oscar_minc_deadline_text']; ?></textarea>
+    <p class="description">Esta mensagem será visível na tela de inscrições do proponente.</p>
     <?php
 }

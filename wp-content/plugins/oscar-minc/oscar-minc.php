@@ -335,6 +335,16 @@ if (!class_exists('OscarMinC')) :
 
 			add_post_meta($post_id, '_inscription_validated', true, true);
 
+            // Notify the user about its subscription sent
+			$to = $user->user_email;
+			$subject = 'Sua inscrição foi recebida.';
+			$body  = '<h1>Olá '. $user->display_name .',</h1>';
+			$body .= $oscar_minc_options['oscar_minc_email_body'];
+
+			if (!wp_mail($to, $subject, $body, $headers)) {
+				error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
+			}
+
         }
 
 		/**
@@ -587,7 +597,7 @@ if (!class_exists('OscarMinC')) :
 			$subject = 'Seu filme ' . get_post_meta($post_id, 'titulo_do_filme', true) . ', foi recebido com sucesso.';
 
 			$body = '<h1>Olá '. $user->display_name .',</h1>';
-			$body .= '<p>'. $oscar_minc_options['oscar_minc_movie_uploaded_message'] .'</p><br>';
+			$body .= '<p>'. $oscar_minc_options['oscar_minc_email_body_video_received'] .'</p><br>';
 
 			if (!wp_mail($to, $subject, $body, $headers)) {
 				error_log("ERRO: O envio de email de monitoramento para: " . $to . ', Falhou!', 0);
@@ -596,8 +606,6 @@ if (!class_exists('OscarMinC')) :
 			$oscar_minc_options = get_option('oscar_minc_options');
 			$monitoring_emails = explode(',', $oscar_minc_options['oscar_minc_monitoring_emails']);
 			$to = array_map('trim', $monitoring_emails);
-			$headers[] = 'From: ' . get_bloginfo('name') . ' <automatico@cultura.gov.br>';
-			$headers[] = 'Reply-To: ' . $oscar_minc_options['oscar_minc_email_from_name'] . ' <' . $oscar_minc_options['oscar_minc_email_from'] . '>';
 			$subject = 'O filme ' . get_post_meta($post_id, 'titulo_do_filme', true) . ', foi enviado com sucesso.';
 
 			$body = '<h1>Olá,</h1>';
@@ -667,6 +675,7 @@ if (!class_exists('OscarMinC')) :
         {
 			if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
 
+				date_default_timezone_set('America/Sao_Paulo');
 				$user = wp_get_current_user();
 				$user_cnpj = get_user_meta( $user->ID, '_user_cnpj', true );
 				$user_cnpj = $this->mask($user_cnpj, '##.###.###/####-##');
