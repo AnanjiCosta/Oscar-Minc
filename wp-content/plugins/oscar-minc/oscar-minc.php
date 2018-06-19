@@ -219,7 +219,7 @@ if (!class_exists('OscarMinC')) :
 
             switch ($column) {
                 case 'responsible':
-                    echo $post_author->display_name;
+                    echo '<a href="'. admin_url('/user-edit.php?user_id=') . $post_author_id . '">' . $post_author->display_name . '</a>';
                     break;
                 case 'user_cnpj':
                     echo $this->mask(get_user_meta($post_author_id, '_user_cnpj', true), '##.###.###/####-##');
@@ -230,8 +230,10 @@ if (!class_exists('OscarMinC')) :
                     <div id="oscar-movie-id-<?php echo $post_id; ?>" class="oscar-thickbox-modal">
                         <div class="oscar-thickbox-modal-body">
                             <?php echo do_shortcode('[video src="'. wp_get_attachment_url( $oscar_movie_id ) .'"]'); ?>
-                            <h4><b>Filme: </b><?php echo get_field('titulo_do_filme', $post_id); ?> <a href="#"><small>(baixar filme)</small></a></h4>
-                            <p><b>Proponente: <?php echo $post_author->display_name; ?></b></p>
+                            <p>Proponente: <b><?php echo $post_author->display_name; ?></b></p>
+                            <p>Filme: <b><?php echo get_field('titulo_do_filme', $post_id); ?></b> <a href="#"><small>(baixar filme)</small></a></p>
+                            <p>Sinopse:<br>
+                            <?php echo get_field('breve_sinopse_em_portugues', $post_id); ?></p>
                         </div>
                     </div>
 
@@ -667,9 +669,9 @@ if (!class_exists('OscarMinC')) :
 		public function remove_admin_bar()
         {
 			if (
-			        !current_user_can('administrator') &&
-					!current_user_can('editor') &&
-                    !is_admin()
+                !current_user_can('administrator') &&
+                !current_user_can('editor') &&
+                !is_admin()
             ) {
 				show_admin_bar(false);
 			}
