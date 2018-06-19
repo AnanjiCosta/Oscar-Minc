@@ -466,6 +466,14 @@ if (!class_exists('OscarMinC')) :
 				$size = $_FILES['oscarVideo']['size']; // Get the size of the file
 				$ext  = explode('/', $_FILES['oscarVideo']['type'] )[1]; // Extract the extension of the file
 
+                // var_dump($_FILES['oscarVideo']['type']);
+                // Check for mov extension file type
+                if( array_search('mov', $valid_formats) ){
+					$ext_mov = array_search('mov', $valid_formats);
+					$valid_formats[$ext_mov] = 'quicktime';
+                }
+				// var_dump($valid_formats);
+
 				if (in_array($ext, $valid_formats)) { // If the file is valid go on.
 					// Check if the file size is more than defined in options page
 					if ( $size < intval($oscar_minc_options['oscar_minc_movie_max_size']) * pow(1024,3) ) {
